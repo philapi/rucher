@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mon Rucher</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --honey:    #E8930A;
+  --honey-l:  #F5C842;
+  --amber:    #C46E00;
+  --dark:     #130E04;
+  --warm:     #2A1C06;
+  --warm2:    #3D2A0A;
+  --cream:    #FDF6E3;
+  --cream2:   #F0E0C0;
+  --text:     #3A2A0A;
+  --muted:    #8A6830;
+  --green:    #3D7A35;
+  --green-l:  #D4EDD0;
+  --red:      #B83030;
+  --red-l:    #FAD7D3;
+  --orange-l: #FCE8C5;
+  --blue:     #1A5C80;
+  --r: 12px;
+  --r-sm: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--dark);
+  color: var(--cream);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--warm);
+  border-bottom: 2px solid var(--honey);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky; top: 0; z-index: 50;
+  flex-shrink: 0;
+}
+.topbar-back {
+  width: 36px; height: 36px;
+  background: var(--warm2);
+  border: none; border-radius: 50%;
+  color: var(--honey-l); font-size: 1.1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem; color: var(--honey-l);
+  flex: 1; line-height: 1.2;
+}
+.topbar-sub { font-size: 0.72rem; color: var(--muted); font-weight: 400; display: block; }
+.topbar-action {
+  background: var(--honey); color: var(--dark);
+  border: none; border-radius: var(--r-sm);
+  padding: 8px 14px; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── SCROLL AREA ── */
+.scroll { flex: 1; overflow-y: auto; padding: 16px; }
+.scroll-pb { padding-bottom: 100px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--warm);
+  border-top: 1.5px solid var(--warm2);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 50;
+}
+.bnav-btn {
+  flex: 1; border: none; background: none;
+  padding: 10px 4px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; transition: color 0.15s;
+  color: var(--muted);
+}
+.bnav-btn.active { color: var(--honey-l); }
+.bnav-btn .icon { font-size: 1.3rem; line-height: 1; }
+.bnav-btn .lbl { font-size: 0.62rem; font-weight: 500; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--warm);
+  border: 1.5px solid var(--warm2);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.card-row {
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+.card-row:active { opacity: 0.7; }
+
+/* ── BADGES ── */
+.badge {
+  font-size: 0.68rem; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px;
+  display: inline-block;
+}
+.badge-ok   { background: var(--green-l); color: var(--green); }
+.badge-warn { background: var(--orange-l); color: var(--amber); }
+.badge-bad  { background: var(--red-l); color: var(--red); }
+.badge-info { background: #D0E8F0; color: var(--blue); }
+.badge-grey { background: var(--warm2); color: var(--muted); }
+
+/* ── STAT PILLS ── */
+.stat-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.stat-pill {
+  background: var(--warm);
+  border: 1px solid var(--warm2);
+  border-radius: var(--r);
+  padding: 12px 14px; flex: 1; min-width: 80px;
+  text-align: center;
+}
+.stat-pill .val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; color: var(--honey-l); line-height: 1;
+  display: block; margin-bottom: 2px;
+}
+.stat-pill .lbl { font-size: 0.68rem; color: var(--muted); }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+  margin: 18px 0 10px;
+}
+.section-title:first-child { margin-top: 0; }
+
+/* ── BIG BUTTONS (tournée) ── */
+.big-btn {
+  width: 100%; padding: 18px;
+  background: var(--warm); border: 2px solid var(--warm2);
+  border-radius: var(--r); color: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500;
+  cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 10px; transition: border-color 0.15s;
+}
+.big-btn:active { opacity: 0.8; }
+.big-btn.selected { border-color: var(--honey); background: #3D2A10; }
+.big-btn .bi { font-size: 1.6rem; flex-shrink: 0; }
+.big-btn .bt { flex: 1; }
+.big-btn .bt small { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+/* ── TOURNÉE MODE ── */
+.tournee-progress {
+  background: var(--warm); border-radius: var(--r);
+  padding: 12px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.progress-bar { flex: 1; height: 6px; background: var(--warm2); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--honey); border-radius: 3px; transition: width 0.3s; }
+.tournee-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem; color: var(--honey-l); line-height: 1;
+  text-align: center; margin: 8px 0 4px;
+}
+.tournee-nom { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+
+/* ── CHOICE BUTTONS ── */
+.choices { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.choice-btn {
+  flex: 1; min-width: 60px;
+  padding: 14px 8px;
+  background: var(--warm2); border: 2px solid transparent;
+  border-radius: var(--r-sm); color: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; text-align: center; transition: all 0.12s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.choice-btn small { font-size: 0.62rem; font-weight: 400; color: var(--muted); }
+.choice-btn.selected-1 { border-color: var(--red); background: #3A1010; color: #F08080; }
+.choice-btn.selected-2 { border-color: var(--honey); background: #3D2A10; color: var(--honey-l); }
+.choice-btn.selected-3 { border-color: var(--green); background: #102810; color: #80D880; }
+.choice-btn.selected-ok { border-color: var(--green); background: #102810; color: #80D880; }
+.choice-btn.selected-nv { border-color: var(--red); background: #3A1010; color: #F08080; }
+.choice-btn.selected-v  { border-color: var(--green); background: #102810; color: #80D880; }
+.choice-btn.selected-f  { border-color: var(--red); background: #3A1010; color: #F08080; }
+.choice-btn.selected-o  { border-color: var(--honey); background: #3D2A10; color: var(--honey-l); }
+.choice-btn.selected-i  { border-color: var(--red); background: #3A1010; color: #F08080; }
+.choice-btn.selected    { border-color: var(--honey); background: #3D2A10; color: var(--honey-l); }
+
+.field-label {
+  font-size: 0.72rem; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 8px; display: block;
+}
+
+/* ── ACTIONS GRID ── */
+.actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.action-chip {
+  padding: 10px 8px; background: var(--warm2);
+  border: 2px solid transparent; border-radius: var(--r-sm);
+  color: var(--cream); font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; text-align: center; transition: all 0.12s;
+}
+.action-chip.on { border-color: var(--honey); background: #3D2A10; color: var(--honey-l); }
+
+/* ── TEXTAREA ── */
+.obs-input {
+  width: 100%; background: var(--warm2);
+  border: 1.5px solid var(--warm2); border-radius: var(--r-sm);
+  padding: 12px; color: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  min-height: 70px; resize: none;
+  margin-bottom: 14px;
+}
+.obs-input:focus { outline: none; border-color: var(--honey); }
+.obs-input::placeholder { color: var(--muted); }
+
+/* ── NAV BUTTONS ── */
+.nav-row { display: flex; gap: 10px; }
+.btn-prev {
+  flex: 1; padding: 16px;
+  background: var(--warm2); border: none; border-radius: var(--r);
+  color: var(--cream); font-size: 1rem; font-weight: 500; cursor: pointer;
+}
+.btn-next {
+  flex: 2; padding: 16px;
+  background: var(--honey); border: none; border-radius: var(--r);
+  color: var(--dark); font-size: 1rem; font-weight: 600; cursor: pointer;
+}
+.btn-finish {
+  flex: 2; padding: 16px;
+  background: var(--green); border: none; border-radius: var(--r);
+  color: white; font-size: 1rem; font-weight: 600; cursor: pointer;
+}
+
+/* ── FORMS ── */
+.form-field { margin-bottom: 14px; }
+.form-field label {
+  display: block; font-size: 0.72rem; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%; background: var(--warm2);
+  border: 1.5px solid var(--warm2); border-radius: var(--r-sm);
+  padding: 12px 14px; color: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+}
+.form-input:focus { outline: none; border-color: var(--honey); }
+.form-input::placeholder { color: var(--muted); }
+select.form-input option { background: var(--dark); }
+
+.btn-primary {
+  width: 100%; padding: 15px;
+  background: var(--honey); border: none; border-radius: var(--r);
+  color: var(--dark); font-size: 1rem; font-weight: 600;
+  cursor: pointer; margin-top: 6px;
+}
+.btn-secondary {
+  width: 100%; padding: 14px;
+  background: var(--warm2); border: 1px solid #5A3A10; border-radius: var(--r);
+  color: var(--cream); font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; margin-top: 8px;
+}
+.btn-danger {
+  width: 100%; padding: 13px;
+  background: transparent; border: 1px solid var(--red); border-radius: var(--r);
+  color: var(--red); font-size: 0.88rem; cursor: pointer; margin-top: 8px;
+}
+
+/* ── ALERT ITEMS ── */
+.alert-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--r-sm);
+  margin-bottom: 8px; border-left: 3px solid;
+  background: var(--warm);
+}
+.alert-item.urgent { border-color: var(--red); }
+.alert-item.warn   { border-color: var(--honey); }
+.alert-item.info   { border-color: var(--blue); }
+.alert-item .ai-text { flex: 1; font-size: 0.82rem; line-height: 1.4; }
+.alert-item .ai-go {
+  background: var(--warm2); border: none; border-radius: 6px;
+  color: var(--cream); padding: 6px 10px; font-size: 0.75rem; cursor: pointer;
+}
+
+/* ── HISTORY ── */
+.hist-item {
+  border-left: 3px solid var(--honey);
+  padding: 10px 12px; margin-bottom: 8px;
+  background: var(--warm2); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+.hist-date { font-size: 0.75rem; color: var(--honey-l); font-weight: 600; margin-bottom: 4px; }
+.hist-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 4px; }
+.hist-obs { font-size: 0.78rem; color: var(--cream2); }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 48px 24px; color: var(--muted); }
+.empty .icon { font-size: 2.8rem; margin-bottom: 10px; }
+.empty p { font-size: 0.88rem; line-height: 1.5; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); z-index: 200;
+  align-items: flex-end; justify-content: center;
+  padding: 0;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--warm);
+  border-radius: 20px 20px 0 0;
+  border-top: 2px solid var(--honey);
+  padding: 20px 20px 32px;
+  width: 100%; max-height: 90vh; overflow-y: auto;
+}
+.modal-handle {
+  width: 36px; height: 4px; background: var(--warm2);
+  border-radius: 2px; margin: 0 auto 16px;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; color: var(--honey-l); margin-bottom: 18px;
+}
+
+/* ── DASHBOARD CHART ── */
+.mini-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mini-bar-lbl { font-size: 0.75rem; width: 60px; color: var(--cream2); text-align: right; flex-shrink: 0; }
+.mini-bar-bg { flex: 1; height: 14px; background: var(--warm2); border-radius: 7px; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 7px; transition: width 0.5s; }
+.mini-bar-val { font-size: 0.72rem; color: var(--muted); width: 22px; flex-shrink: 0; }
+
+/* ── RUCHER ICON ── */
+.rucher-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+  background: var(--warm2);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--warm2); border-radius: 2px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--green); color: white;
+  padding: 10px 20px; border-radius: 20px;
+  font-size: 0.85rem; font-weight: 500;
+  opacity: 0; transition: all 0.25s; z-index: 300; white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* separator */
+.sep { height: 1px; background: var(--warm2); margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     SCREEN 1 : DASHBOARD
+════════════════════════════════════ -->
+<div class="screen active" id="s-dashboard">
+  <div class="topbar">
+    <h1>🍯 Mon Rucher</h1>
+    <button class="topbar-action" onclick="nav('s-params')">⚙</button>
+  </div>
+  <div class="scroll scroll-pb" id="dashboard-content"></div>
+  <nav class="bottom-nav" id="bnav-dashboard">
+    <button class="bnav-btn active" onclick="showTab('dashboard')"><span class="icon">🏠</span><span class="lbl">Accueil</span></button>
+    <button class="bnav-btn" onclick="showTab('tournee-pick')"><span class="icon">🌿</span><span class="lbl">Tournée</span></button>
+    <button class="bnav-btn" onclick="showTab('alertes')"><span class="icon">🔔</span><span class="lbl">Alertes</span></button>
+    <button class="bnav-btn" onclick="showTab('ruchers')"><span class="icon">🗂</span><span class="lbl">Ruchers</span></button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 2 : LISTE RUCHERS
+════════════════════════════════════ -->
+<div class="screen" id="s-ruchers">
+  <div class="topbar">
+    <h1>Mes Ruchers</h1>
+    <button class="topbar-action" onclick="openModalRucher()">+ Rucher</button>
+  </div>
+  <div class="scroll scroll-pb" id="ruchers-content"></div>
+  <nav class="bottom-nav">
+    <button class="bnav-btn" onclick="showTab('dashboard')"><span class="icon">🏠</span><span class="lbl">Accueil</span></button>
+    <button class="bnav-btn" onclick="showTab('tournee-pick')"><span class="icon">🌿</span><span class="lbl">Tournée</span></button>
+    <button class="bnav-btn" onclick="showTab('alertes')"><span class="icon">🔔</span><span class="lbl">Alertes</span></button>
+    <button class="bnav-btn active" onclick="showTab('ruchers')"><span class="icon">🗂</span><span class="lbl">Ruchers</span></button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 3 : RUCHES D'UN RUCHER
+════════════════════════════════════ -->
+<div class="screen" id="s-ruches">
+  <div class="topbar">
+    <button class="topbar-back" onclick="navBack()">←</button>
+    <h1 id="s-ruches-title">Rucher</h1>
+    <button class="topbar-action" onclick="openModalRuche()">+ Ruche</button>
+  </div>
+  <div class="scroll scroll-pb" id="ruches-content"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 4 : DÉTAIL RUCHE
+════════════════════════════════════ -->
+<div class="screen" id="s-ruche-detail">
+  <div class="topbar">
+    <button class="topbar-back" onclick="navBack()">←</button>
+    <h1 id="s-ruche-title">Ruche</h1>
+    <button class="topbar-action" onclick="openVisite1Ruche()">Visite</button>
+  </div>
+  <div class="scroll scroll-pb" id="ruche-detail-content"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 5 : CHOIX RUCHER POUR TOURNÉE
+════════════════════════════════════ -->
+<div class="screen" id="s-tournee-pick">
+  <div class="topbar">
+    <h1>Nouvelle tournée<span class="topbar-sub">Choisissez un rucher</span></h1>
+  </div>
+  <div class="scroll scroll-pb" id="tournee-pick-content"></div>
+  <nav class="bottom-nav">
+    <button class="bnav-btn" onclick="showTab('dashboard')"><span class="icon">🏠</span><span class="lbl">Accueil</span></button>
+    <button class="bnav-btn active" onclick="showTab('tournee-pick')"><span class="icon">🌿</span><span class="lbl">Tournée</span></button>
+    <button class="bnav-btn" onclick="showTab('alertes')"><span class="icon">🔔</span><span class="lbl">Alertes</span></button>
+    <button class="bnav-btn" onclick="showTab('ruchers')"><span class="icon">🗂</span><span class="lbl">Ruchers</span></button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 6 : TOURNÉE EN COURS
+════════════════════════════════════ -->
+<div class="screen" id="s-tournee">
+  <div class="topbar">
+    <button class="topbar-back" onclick="confirmQuitTournee()">←</button>
+    <h1 id="tournee-title">Tournée<span class="topbar-sub" id="tournee-sub"></span></h1>
+  </div>
+  <div class="scroll scroll-pb" id="tournee-content"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 7 : ALERTES
+════════════════════════════════════ -->
+<div class="screen" id="s-alertes">
+  <div class="topbar">
+    <h1>Alertes</h1>
+  </div>
+  <div class="scroll scroll-pb" id="alertes-content"></div>
+  <nav class="bottom-nav">
+    <button class="bnav-btn" onclick="showTab('dashboard')"><span class="icon">🏠</span><span class="lbl">Accueil</span></button>
+    <button class="bnav-btn" onclick="showTab('tournee-pick')"><span class="icon">🌿</span><span class="lbl">Tournée</span></button>
+    <button class="bnav-btn active" onclick="showTab('alertes')"><span class="icon">🔔</span><span class="lbl">Alertes</span></button>
+    <button class="bnav-btn" onclick="showTab('ruchers')"><span class="icon">🗂</span><span class="lbl">Ruchers</span></button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN 8 : PARAMÈTRES
+════════════════════════════════════ -->
+<div class="screen" id="s-params">
+  <div class="topbar">
+    <button class="topbar-back" onclick="navBack()">←</button>
+    <h1>Paramètres</h1>
+  </div>
+  <div class="scroll">
+    <div class="card" style="margin-bottom:10px;">
+      <div class="section-title">Apiculteur</div>
+      <div class="form-field">
+        <label>Nom</label>
+        <input class="form-input" id="p-nom" placeholder="Votre nom" oninput="saveParams()">
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Données</div>
+      <button class="btn-secondary" onclick="exportData()">⬇ Exporter (JSON)</button>
+      <label for="import-file" style="display:block;font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin:14px 0 6px;">Importer un fichier JSON</label>
+      <input type="file" id="import-file" accept=".json,application/json" style="width:100%;color:var(--cream);font-size:0.78rem;background:var(--warm2);border-radius:var(--r-sm);padding:10px;border:1.5px solid var(--warm2);">
+      <button class="btn-danger" onclick="resetData()">🗑 Réinitialiser toutes les données</button>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:16px;padding:0 16px;">
+      Données stockées localement. Exportez régulièrement en JSON comme sauvegarde.
+    </p>
+  </div>
+</div>
+
+<!-- ════════════
+     MODALS
+════════════ -->
+<!-- Modal Rucher -->
+<div class="modal-overlay" id="modal-rucher">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-rucher-title">Nouveau rucher</div>
+    <input type="hidden" id="mr-id">
+    <div class="form-field">
+      <label>Nom du rucher *</label>
+      <input class="form-input" id="mr-nom" placeholder="Ex: Rucher du Verger">
+    </div>
+    <div class="form-field">
+      <label>Emplacement</label>
+      <input class="form-input" id="mr-lieu" placeholder="Commune, secteur...">
+    </div>
+    <div class="form-field">
+      <label>Icône</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;" id="mr-icons"></div>
+    </div>
+    <button class="btn-primary" onclick="saveRucher()">Enregistrer</button>
+    <button class="btn-secondary" onclick="closeModal('modal-rucher')">Annuler</button>
+    <button class="btn-danger" id="mr-delete-btn" onclick="deleteRucher()" style="display:none;">Supprimer ce rucher</button>
+    <button class="btn-secondary" id="mr-merge-btn" onclick="openMerge()" style="display:none;margin-top:8px;">🔀 Fusionner avec un autre rucher</button>
+  </div>
+</div>
+
+<!-- Modal Ruche -->
+<div class="modal-overlay" id="modal-ruche">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-ruche-title">Nouvelle ruche</div>
+    <input type="hidden" id="mru-id">
+    <div class="form-field" style="margin-bottom:14px;">
+      <label>Type de colonie</label>
+      <div style="display:flex;gap:8px;">
+        <button id="mru-toggle-ruche" onclick="setColonyType('ruche')" class="choice-btn selected-ok" style="flex:1;padding:12px;border-radius:var(--r-sm);">&#127968; Ruche</button>
+        <button id="mru-toggle-ruchette" onclick="setColonyType('ruchette')" class="choice-btn" style="flex:1;padding:12px;border-radius:var(--r-sm);">&#128230; Ruchette</button>
+      </div>
+      <input type="hidden" id="mru-colony-type" value="ruche">
+    </div>
+    <div class="form-field" style="margin-bottom:14px;">
+      <label>Statut</label>
+      <div style="display:flex;gap:8px;">
+        <button id="mru-toggle-active" onclick="setRucheStatus('active')" class="choice-btn selected-ok" style="flex:1;padding:12px;border-radius:var(--r-sm);">&#9989; Active</button>
+        <button id="mru-toggle-vide" onclick="setRucheStatus('vide')" class="choice-btn" style="flex:1;padding:12px;border-radius:var(--r-sm);">&#128683; Vide</button>
+      </div>
+      <input type="hidden" id="mru-status" value="active">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-field">
+        <label>Numéro *</label>
+        <input class="form-input" id="mru-num" placeholder="R01">
+      </div>
+      <div class="form-field">
+        <label>Type</label>
+        <select class="form-input" id="mru-type">
+          <option>Dadant 10</option><option>Dadant 12</option>
+          <option>Langstroth</option><option>Warré</option><option>Ruchette 5c</option><option>Ruchette 6c</option><option>Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Race</label>
+      <select class="form-input" id="mru-race">
+        <option value="">—</option>
+        <option>Buckfast</option><option>Apis mellifera mellifera</option>
+        <option>Carniolienne</option><option>Caucasienne</option><option>Autre</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Notes</label>
+      <textarea class="obs-input" id="mru-notes" placeholder="Infos complémentaires..." style="margin-bottom:0;"></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveRuche()">Enregistrer</button>
+    <button class="btn-secondary" onclick="closeModal('modal-ruche')">Annuler</button>
+    <button class="btn-secondary" id="mru-move-btn" onclick="openMoveRuche()" style="display:none;margin-top:8px;">📦 Déplacer vers un autre rucher</button>
+    <button class="btn-danger" id="mru-delete-btn" onclick="deleteRuche()" style="display:none;">Supprimer cette ruche</button>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- Modal Liste Ruches (filtre) -->
+<div class="modal-overlay" id="modal-ruche-list">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ruche-list-title">Ruches</div>
+    <div id="ruche-list-content" style="max-height:60vh;overflow-y:auto;"></div>
+    <button class="btn-secondary" onclick="closeModal('modal-ruche-list')" style="margin-top:14px;">Fermer</button>
+  </div>
+</div>
+
+<!-- Modal Export Fallback -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Sauvegarde de vos données</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+      Le téléchargement automatique ne fonctionne pas sur ce téléphone. Copiez le texte ci-dessous et collez-le dans un email, une note, ou Google Keep pour le sauvegarder.
+    </p>
+    <textarea id="export-textarea" readonly style="width:100%;height:160px;background:var(--dark);border:1.5px solid var(--warm2);border-radius:var(--r-sm);padding:10px;color:var(--cream2);font-size:0.7rem;font-family:monospace;margin-bottom:14px;" onclick="this.select()"></textarea>
+    <button class="btn-primary" onclick="copyExportData()">📋 Copier le texte</button>
+    <button class="btn-secondary" onclick="closeModal('modal-export')" style="margin-top:8px;">Fermer</button>
+  </div>
+</div>
+
+<!-- Modal Déplacer Ruche -->
+<div class="modal-overlay" id="modal-move-ruche">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Déplacer la ruche</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5;">
+      La ruche <strong id="move-ruche-label" style="color:var(--honey-l);"></strong> sera transférée vers le rucher sélectionné. Son historique est conservé.
+    </p>
+    <div class="form-field">
+      <label>Rucher destination *</label>
+      <select class="form-input" id="move-ruche-dest"></select>
+    </div>
+    <button class="btn-primary" onclick="doMoveRuche()" style="background:var(--blue);">📦 Déplacer</button>
+    <button class="btn-secondary" onclick="closeModal('modal-move-ruche')" style="margin-top:8px;">Annuler</button>
+  </div>
+</div>
+
+<!-- Modal Fusion Ruchers -->
+<div class="modal-overlay" id="modal-merge">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Fusionner des ruchers</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5;">
+      Toutes les ruches du rucher <strong id="merge-src-label" style="color:var(--honey-l);"></strong> seront transférées vers le rucher destination. Le rucher source sera supprimé.
+    </p>
+    <div class="form-field">
+      <label>Rucher destination *</label>
+      <select class="form-input" id="merge-dest-select"></select>
+    </div>
+    <button class="btn-primary" onclick="doMerge()" style="background:var(--green);">🔀 Fusionner</button>
+    <button class="btn-secondary" onclick="closeModal('modal-merge')" style="margin-top:8px;">Annuler</button>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-sheet" style="padding-bottom:24px;">
+    <div class="modal-handle"></div>
+    <div id="confirm-msg" style="font-size:1rem;color:var(--cream);margin-bottom:24px;line-height:1.5;"></div>
+    <button class="btn-danger" id="confirm-ok" style="margin-bottom:0;">Confirmer la suppression</button>
+    <button class="btn-secondary" onclick="closeModal('modal-confirm')" style="margin-top:10px;">Annuler</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+const RUCHER_ICONS = ['🌳','🌻','🌲','🌾','🏡','⛰','🌸','🍀','🌿','🏕'];
+const ACTIONS_LIST = ['Nourrissement','Traitement varroa','Pose hausse','Retrait hausse',
+                      'Transhumance','Récolte miel','Essaimage','Remplacement reine','Visite sanitaire'];
+
+let db = { ruchers:[], ruches:[], visites:[], params:{nom:''} };
+let navStack = [];
+let currentRucherId = null;
+let currentRucheId  = null;
+
+// Tournée state
+let tournee = { rucherId:null, ruches:[], idx:0, data:{} };
+
+function load() {
+  const s = localStorage.getItem('rucher2_db');
+  if (s) db = JSON.parse(s);
+  if (!db.params) db.params = {nom:''};
+  document.getElementById('p-nom').value = db.params.nom || '';
+  renderDashboard();
+}
+
+function save() { localStorage.setItem('rucher2_db', JSON.stringify(db)); }
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function nav(screenId) {
+  const cur = document.querySelector('.screen.active');
+  if (cur) navStack.push(cur.id);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+function navBack() {
+  if (!navStack.length) return showTab('dashboard');
+  const prev = navStack.pop();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(prev).classList.add('active');
+}
+
+function showTab(tab) {
+  navStack = [];
+  const map = {
+    'dashboard':    's-dashboard',
+    'tournee-pick': 's-tournee-pick',
+    'alertes':      's-alertes',
+    'ruchers':      's-ruchers',
+  };
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(map[tab]).classList.add('active');
+
+  if (tab === 'dashboard')    renderDashboard();
+  if (tab === 'tournee-pick') renderTourneePick();
+  if (tab === 'alertes')      renderAlertes();
+  if (tab === 'ruchers')      renderRuchers();
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════
+
+function getLastVisitByRuche() {
+  const map = {};
+  db.ruches.forEach(r => {
+    const vs = db.visites.filter(v=>v.rucheId===r.id).sort((a,b)=>b.date.localeCompare(a.date));
+    map[r.id] = vs[0] || null;
+  });
+  return map;
+}
+
+function renderRucheListModal(title, ruchesMatching) {
+  document.getElementById('ruche-list-title').textContent = title + ' (' + ruchesMatching.length + ')';
+  const el = document.getElementById('ruche-list-content');
+  if (!ruchesMatching.length) {
+    el.innerHTML = '<p style="font-size:0.85rem;color:var(--muted);text-align:center;padding:20px 0;">Aucune ruche concernée.</p>';
+  } else {
+    el.innerHTML = ruchesMatching.map(r => {
+      const rc = db.ruchers.find(x => x.id === r.rucherId);
+      return `<div class="hist-item" style="cursor:pointer;" onclick="closeModal('modal-ruche-list');goToRuche('${r.id}')">
+        <div class="hist-date">${r.num}${r.type?' · '+r.type:''}</div>
+        <div style="font-size:0.78rem;color:var(--muted);">${rc?rc.icon+' '+rc.nom:''}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('modal-ruche-list').classList.add('open');
+}
+
+function showRucheList(field, value) {
+  const lastMap = getLastVisitByRuche();
+  const matching = db.ruches.filter(r => {
+    const v = lastMap[r.id];
+    return v && v[field] === value;
+  });
+  const labels = {
+    'reine_V':'Reine vue', 'reine_NV':'Reine non vue',
+    'couvain_O':'Couvain OK', 'couvain_I':'Couvain irrégulier',
+    'reserves_OK':'Réserves OK', 'reserves_F':'Réserves faibles'
+  };
+  renderRucheListModal(labels[field+'_'+value] || 'Ruches', matching);
+}
+
+function showRucheListAction(actionName) {
+  const rucheIds = new Set();
+  db.visites.forEach(v => {
+    if (v.actions && v.actions.includes(actionName)) rucheIds.add(v.rucheId);
+  });
+  const matching = db.ruches.filter(r => rucheIds.has(r.id));
+  renderRucheListModal(actionName, matching);
+}
+
+function renderDashboard() {
+  const now = new Date();
+  const mois = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const totalRuches = db.ruches.filter(r=>r.status!=='vide').length;
+  const totalVides = db.ruches.filter(r=>r.status==='vide').length;
+  const visitesM = db.visites.filter(v=>v.date.startsWith(mois)).length;
+
+  const alertCount = getAlertes().length;
+
+  // Last visits
+  const recent = [...db.visites].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+
+  // Force distribution (ruches actives uniquement)
+  const activeRuches = db.ruches.filter(r=>r.status!=='vide');
+  const lastByRuche = activeRuches.map(r => {
+    const vs = db.visites.filter(v=>v.rucheId===r.id).sort((a,b)=>b.date.localeCompare(a.date));
+    return vs[0]||null;
+  });
+  const f1 = lastByRuche.filter(v=>v&&v.force==='1').length;
+  const f2 = lastByRuche.filter(v=>v&&v.force==='2').length;
+  const f3 = lastByRuche.filter(v=>v&&v.force==='3').length;
+  const max = Math.max(f1,f2,f3,1);
+
+  const nom = db.params.nom ? `Bonjour, ${db.params.nom}` : 'Mon Rucher';
+
+  let html = `
+    <div style="background:var(--warm);border-radius:var(--r);padding:16px;margin-bottom:14px;border:1px solid var(--warm2);">
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:2px;">${fmtDateFull(now)}</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--honey-l);">${nom}</div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill"><span class="val">${db.ruchers.length}</span><span class="lbl">Ruchers</span></div>
+      <div class="stat-pill"><span class="val">${totalRuches}</span><span class="lbl">Ruches</span></div>
+      <div class="stat-pill"><span class="val">${visitesM}</span><span class="lbl">Visites ce mois</span></div>
+      <div class="stat-pill" style="${alertCount>0?'border-color:var(--red);':''}">
+        <span class="val" style="${alertCount>0?'color:var(--red);':''}">${alertCount}</span>
+        <span class="lbl">Alertes</span>
+      </div>
+    </div>
+    ${totalVides>0?`<p style="font-size:0.72rem;color:var(--muted);text-align:center;margin:-4px 0 10px;">+ ${totalVides} ruche${totalVides>1?'s':''} vide${totalVides>1?'s':''} en attente</p>`:''}`;
+
+  if (alertCount > 0) {
+    html += `<div class="alert-item urgent" onclick="showTab('alertes')" style="cursor:pointer;">
+      <span style="font-size:1.2rem;">⚠️</span>
+      <div class="ai-text"><strong>${alertCount} alerte${alertCount>1?'s':''}</strong> nécessitent votre attention</div>
+      <span style="color:var(--muted);font-size:0.8rem;">→</span>
+    </div>`;
+  }
+
+  // Force chart
+  html += `
+    <div class="section-title">État des colonies</div>
+    <div class="card">
+      <div class="mini-bar">
+        <div class="mini-bar-lbl">Forte</div>
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${Math.round(f3/max*100)}%;background:var(--green);"></div></div>
+        <div class="mini-bar-val">${f3}</div>
+      </div>
+      <div class="mini-bar">
+        <div class="mini-bar-lbl">Moyenne</div>
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${Math.round(f2/max*100)}%;background:var(--honey);"></div></div>
+        <div class="mini-bar-val">${f2}</div>
+      </div>
+      <div class="mini-bar">
+        <div class="mini-bar-lbl">Faible</div>
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${Math.round(f1/max*100)}%;background:var(--red);"></div></div>
+        <div class="mini-bar-val">${f1}</div>
+      </div>
+    </div>`;
+
+  // ── Vue globale Reine / Couvain / Réserves ──
+  const reineV  = lastByRuche.filter(v=>v&&v.reine==='V').length;
+  const reineNV = lastByRuche.filter(v=>v&&v.reine==='NV').length;
+  const couvO   = lastByRuche.filter(v=>v&&v.couvain==='O').length;
+  const couvI   = lastByRuche.filter(v=>v&&v.couvain==='I').length;
+  const resOK   = lastByRuche.filter(v=>v&&v.reserves==='OK').length;
+  const resF    = lastByRuche.filter(v=>v&&v.reserves==='F').length;
+  const nonRenseigne = totalRuches - lastByRuche.filter(v=>v).length;
+
+  html += `
+    <div class="section-title">Vue globale du rucher</div>
+    <div class="stat-row">
+      <div class="stat-pill" onclick="showRucheList('reine','V')" style="cursor:pointer;">
+        <span class="val" style="font-size:1.3rem;color:var(--green);">${reineV}</span>
+        <span class="lbl">Reine vue</span>
+      </div>
+      <div class="stat-pill" onclick="showRucheList('reine','NV')" style="cursor:pointer;${reineNV>0?'border-color:var(--red);':''}">
+        <span class="val" style="font-size:1.3rem;${reineNV>0?'color:var(--red);':''}">${reineNV}</span>
+        <span class="lbl">Reine non vue</span>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-pill" onclick="showRucheList('couvain','O')" style="cursor:pointer;">
+        <span class="val" style="font-size:1.3rem;color:var(--green);">${couvO}</span>
+        <span class="lbl">Couvain OK</span>
+      </div>
+      <div class="stat-pill" onclick="showRucheList('couvain','I')" style="cursor:pointer;${couvI>0?'border-color:var(--honey);':''}">
+        <span class="val" style="font-size:1.3rem;${couvI>0?'color:var(--honey-l);':''}">${couvI}</span>
+        <span class="lbl">Couvain irrégulier</span>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-pill" onclick="showRucheList('reserves','OK')" style="cursor:pointer;">
+        <span class="val" style="font-size:1.3rem;color:var(--green);">${resOK}</span>
+        <span class="lbl">Réserves OK</span>
+      </div>
+      <div class="stat-pill" onclick="showRucheList('reserves','F')" style="cursor:pointer;${resF>0?'border-color:var(--red);':''}">
+        <span class="val" style="font-size:1.3rem;${resF>0?'color:var(--red);':''}">${resF}</span>
+        <span class="lbl">Réserves faibles</span>
+      </div>
+    </div>
+    ${nonRenseigne>0?`<p style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:-6px;margin-bottom:10px;">${nonRenseigne} ruche${nonRenseigne>1?'s':''} sans visite enregistrée</p>`:''}`;
+
+  // ── Actions principales réalisées (toutes visites, toutes périodes) ──
+  const actionsToTrack = ['Nourrissement','Traitement varroa','Essaimage','Récolte miel','Remplacement reine'];
+  const actionCounts = {};
+  actionsToTrack.forEach(a => { actionCounts[a] = 0; });
+  db.visites.forEach(v => {
+    if (v.actions) v.actions.forEach(a => { if (actionCounts.hasOwnProperty(a)) actionCounts[a]++; });
+  });
+  const maxAction = Math.max(...Object.values(actionCounts), 1);
+  const actionColors = {
+    'Nourrissement': 'var(--honey)',
+    'Traitement varroa': '#B83030',
+    'Essaimage': '#C46E00',
+    'Récolte miel': 'var(--green)',
+    'Remplacement reine': 'var(--blue)'
+  };
+  const actionIcons = {
+    'Nourrissement': '🍯',
+    'Traitement varroa': '💊',
+    'Essaimage': '🐝',
+    'Récolte miel': '🍶',
+    'Remplacement reine': '👑'
+  };
+
+  html += `
+    <div class="section-title">Actions réalisées (cumulé)</div>
+    <div class="card">` +
+    actionsToTrack.map(a => `
+      <div class="mini-bar" onclick="showRucheListAction('${a}')" style="cursor:pointer;">
+        <div class="mini-bar-lbl" style="width:auto;flex:1;text-align:left;">${actionIcons[a]} ${a}</div>
+        <div class="mini-bar-bg" style="flex:0 0 70px;">
+          <div class="mini-bar-fill" style="width:${Math.round(actionCounts[a]/maxAction*100)}%;background:${actionColors[a]};"></div>
+        </div>
+        <div class="mini-bar-val">${actionCounts[a]}</div>
+      </div>`).join('') +
+    `</div>`;
+
+  // Recent
+  if (recent.length) {
+    html += `<div class="section-title">Dernières visites</div>`;
+    recent.forEach(v => {
+      const r = db.ruches.find(x=>x.id===v.rucheId);
+      const rc = r ? db.ruchers.find(x=>x.id===r.rucherId) : null;
+      html += `<div class="hist-item">
+        <div class="hist-date">${fmtDate(v.date)} — ${r?r.num:'?'} ${rc?'· '+rc.nom:''}</div>
+        <div class="hist-badges">
+          ${v.force?`<span class="badge ${v.force==='3'?'badge-ok':v.force==='1'?'badge-bad':'badge-warn'}">Force ${v.force}</span>`:''}
+          ${v.reine?`<span class="badge ${v.reine==='V'?'badge-ok':'badge-bad'}">Reine ${v.reine}</span>`:''}
+          ${v.reserves?`<span class="badge ${v.reserves==='OK'?'badge-ok':'badge-bad'}">Réserves ${v.reserves}</span>`:''}
+        </div>
+        ${v.obs?`<div class="hist-obs">${v.obs}</div>`:''}
+      </div>`;
+    });
+  } else {
+    html += `<div class="empty"><div class="icon">🐝</div><p>Commencez par créer un rucher,<br>puis lancez une tournée !</p></div>`;
+  }
+
+  document.getElementById('dashboard-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// RUCHERS
+// ═══════════════════════════════════════════════════
+function renderRuchers() {
+  const el = document.getElementById('ruchers-content');
+  if (!db.ruchers.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">🗂</div><p>Aucun rucher encore.<br>Créez votre premier rucher !</p></div>`;
+    return;
+  }
+  el.innerHTML = db.ruchers.map(rc => {
+    const ruches = db.ruches.filter(r=>r.rucherId===rc.id);
+    const alertes = ruches.filter(r => {
+      const vs = db.visites.filter(v=>v.rucheId===r.id);
+      if (!vs.length) return true;
+      const last = new Date(vs.sort((a,b)=>b.date.localeCompare(a.date))[0].date);
+      return (Date.now()-last) > 21*86400000;
+    }).length;
+    return `<div class="card card-row" onclick="openRucher('${rc.id}')">
+      <div class="rucher-icon">${rc.icon||'🌳'}</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:1rem;">${rc.nom}</div>
+        <div style="font-size:0.75rem;color:var(--muted);">${rc.lieu||''} · ${ruches.length} ruche${ruches.length>1?'s':''}</div>
+      </div>
+      ${alertes?`<span class="badge badge-bad">${alertes} ⚠</span>`:'<span class="badge badge-ok">✓</span>'}
+      <button onclick="event.stopPropagation();editRucher('${rc.id}')" style="background:none;border:none;color:var(--muted);font-size:1rem;padding:4px 8px;cursor:pointer;">✏️</button>
+    </div>`;
+  }).join('');
+}
+
+function openRucher(id) {
+  currentRucherId = id;
+  const rc = db.ruchers.find(x=>x.id===id);
+  document.getElementById('s-ruches-title').textContent = `${rc.icon||''} ${rc.nom}`;
+  renderRuches();
+  nav('s-ruches');
+}
+
+function renderRuches() {
+  const ruches = db.ruches.filter(r=>r.rucherId===currentRucherId);
+  const el = document.getElementById('ruches-content');
+  if (!ruches.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">🐝</div><p>Aucune ruche dans ce rucher.<br>Ajoutez votre première ruche !</p></div>`;
+    return;
+  }
+  const now = Date.now();
+  el.onclick = function(e) {
+    const delBtn = e.target.closest('[data-del]');
+    const editBtn = e.target.closest('[data-edit]');
+    if (delBtn) { e.stopPropagation(); deleteRucheId(delBtn.dataset.del); }
+    if (editBtn) { e.stopPropagation(); editRucheId(editBtn.dataset.edit); }
+  };
+  el.innerHTML = ruches.map(r => {
+    const vs = db.visites.filter(v=>v.rucheId===r.id).sort((a,b)=>b.date.localeCompare(a.date));
+    const last = vs[0]||null;
+    const alerte = !last || (now - new Date(last.date)) > 21*86400000;
+    const isRuchette = r.colonyType==='ruchette';
+    const isVide = r.status==='vide';
+    return `<div class="card" style="${isVide?'opacity:0.6;border-style:dashed;':''}">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:42px;height:42px;background:${isVide?'var(--dark)':isRuchette?'#2A1040':'var(--warm2)'};border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:${r.num.length>3?'0.8rem':'1.1rem'};color:${isVide?'var(--muted)':isRuchette?'#C080F0':'var(--honey-l)'};font-weight:700;flex-shrink:0;">${r.num}</div>
+        <div style="flex:1;">
+          <div style="font-weight:500;">${r.num}${r.type?' · '+r.type:''}</div>
+          <div style="font-size:0.72rem;color:var(--muted);">${isVide?'Ruche vide — en attente':(last?'Dernière visite : '+fmtDate(last.date):'Jamais visitée')}</div>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center;">
+          ${isVide?'<span class="badge badge-grey">Vide</span>':''}
+          ${!isVide&&last&&last.force?`<span class="badge ${last.force==='3'?'badge-ok':last.force==='1'?'badge-bad':'badge-warn'}">F${last.force}</span>`:''}
+          ${!isVide?(alerte?'<span class="badge badge-bad">&#9888;</span>':'<span class="badge badge-ok">&#10003;</span>'):''}
+          <button data-edit="${r.id}" style="background:none;border:none;color:var(--muted);font-size:1rem;padding:4px 6px;cursor:pointer;">&#9998;</button>
+          <button data-del="${r.id}" style="background:none;border:none;color:var(--red);font-size:1.1rem;padding:4px 6px;cursor:pointer;">&#128465;</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openRuche(id) {
+  currentRucheId = id;
+  const r = db.ruches.find(x=>x.id===id);
+  document.getElementById('s-ruche-title').textContent = r.num;
+  renderRucheDetail();
+  nav('s-ruche-detail');
+}
+
+function renderRucheDetail() {
+  const r = db.ruches.find(x=>x.id===currentRucheId);
+  const vs = db.visites.filter(v=>v.rucheId===currentRucheId).sort((a,b)=>b.date.localeCompare(a.date));
+  const last = vs[0]||null;
+
+  let html = `<div class="card" style="margin-bottom:14px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${r.notes?'10px':'0'};">
+      ${r.type?`<span class="badge badge-grey">📦 ${r.type}</span>`:''}
+      ${r.race?`<span class="badge badge-grey">🐝 ${r.race}</span>`:''}
+    </div>
+    ${r.notes?`<div style="font-size:0.82rem;color:var(--cream2);margin-top:6px;">${r.notes}</div>`:''}
+  </div>`;
+
+  if (last) {
+    html += `<div class="section-title">Dernier état · ${fmtDate(last.date)}</div>
+    <div class="stat-row">
+      ${last.force?`<div class="stat-pill"><span class="val" style="font-size:1.4rem;color:${last.force==='3'?'var(--green)':last.force==='1'?'var(--red)':'var(--honey-l)'};">${last.force}</span><span class="lbl">Force</span></div>`:''}
+      ${last.reine?`<div class="stat-pill"><span class="val" style="font-size:1.2rem;color:${last.reine==='V'?'var(--green)':'var(--red)'};">${last.reine}</span><span class="lbl">Reine</span></div>`:''}
+      ${last.couvain?`<div class="stat-pill"><span class="val" style="font-size:1.2rem;">${last.couvain}</span><span class="lbl">Couvain</span></div>`:''}
+      ${last.reserves?`<div class="stat-pill"><span class="val" style="font-size:1.2rem;color:${last.reserves==='OK'?'var(--green)':'var(--red)'};">${last.reserves}</span><span class="lbl">Réserves</span></div>`:''}
+    </div>`;
+  }
+
+  html += `<div class="section-title">Historique</div>`;
+  if (!vs.length) {
+    html += `<div class="empty" style="padding:24px;"><p>Aucune visite enregistrée.</p></div>`;
+  } else {
+    vs.forEach(v => {
+      const chips = [
+        v.force?`Force ${v.force}`:'', v.reine?`Reine ${v.reine}`:'',
+        v.couvain?`Couvain ${v.couvain}`:'', v.reserves?`Réserves ${v.reserves}`:'',
+      ].filter(Boolean);
+      html += `<div class="hist-item">
+        <div class="hist-date">${fmtDate(v.date)}</div>
+        <div class="hist-badges">${chips.map(c=>`<span class="badge badge-grey">${c}</span>`).join('')}</div>
+        ${v.actions&&v.actions.length?`<div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">${v.actions.join(' · ')}</div>`:''}
+        ${v.obs?`<div class="hist-obs" style="margin-top:4px;">${v.obs}</div>`:''}
+      </div>`;
+    });
+  }
+
+  html += `<div class="sep"></div>
+    <button class="btn-secondary" onclick="editRuche()">✏️ Modifier la ruche</button>
+    <button class="btn-danger" onclick="deleteCurrentRuche()">Supprimer cette ruche</button>`;
+
+  document.getElementById('ruche-detail-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// TOURNÉE
+// ═══════════════════════════════════════════════════
+function renderTourneePick() {
+  const el = document.getElementById('tournee-pick-content');
+  if (!db.ruchers.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">🌿</div><p>Créez d'abord un rucher dans l'onglet Ruchers.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="section-title">Quel rucher visitez-vous ?</div>` +
+    db.ruchers.map(rc => {
+      const ruches = db.ruches.filter(r=>r.rucherId===rc.id);
+      return `<button class="big-btn" onclick="startTournee('${rc.id}')">
+        <span class="bi">${rc.icon||'🌳'}</span>
+        <span class="bt">${rc.nom}<small>${ruches.length} ruche${ruches.length>1?'s':''} · ${rc.lieu||''}</small></span>
+        <span style="color:var(--muted);">→</span>
+      </button>`;
+    }).join('');
+}
+
+function startTournee(rucherId) {
+  const ruches = db.ruches.filter(r=>r.rucherId===rucherId).sort((a,b)=>a.num.localeCompare(b.num));
+  if (!ruches.length) { toast('Ce rucher n\'a pas de ruches.'); return; }
+  tournee = { rucherId, ruches, idx:0, data:{} };
+  ruches.forEach(r => { tournee.data[r.id] = { force:'', reine:'', couvain:'', reserves:'', actions:[], obs:'' }; });
+  const rc = db.ruchers.find(x=>x.id===rucherId);
+  const titleEl = document.getElementById('tournee-title');
+  titleEl.childNodes[0].textContent = rc.nom;
+  nav('s-tournee');
+  renderTourneeStep();
+}
+
+function renderTourneeStep() {
+  const r = tournee.ruches[tournee.idx];
+  const d = tournee.data[r.id];
+  const total = tournee.ruches.length;
+  const pct = Math.round((tournee.idx / total) * 100);
+  const vs = db.visites.filter(v=>v.rucheId===r.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const last = vs[0]||null;
+  const isLast = tournee.idx === total - 1;
+
+  document.getElementById('tournee-sub').textContent = `${tournee.idx+1} / ${total}`;
+
+  const prevBadge = (val, v, cls) => val===v ? ` selected-${cls}` : '';
+
+  let html = `
+    <div class="tournee-progress">
+      <span style="font-size:0.75rem;color:var(--muted);">${tournee.idx+1}/${total}</span>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      <span style="font-size:0.75rem;color:var(--muted);">${pct}%</span>
+    </div>
+
+    <div class="tournee-num">${r.num}</div>
+    <div class="tournee-nom">${r.type||''}${last?' · Vu le '+fmtDate(last.date):' · Jamais visité'}</div>`;
+
+  // Last état rapide
+  if (last) {
+    html += `<div style="display:flex;gap:6px;justify-content:center;margin-bottom:18px;flex-wrap:wrap;">
+      ${last.force?`<span class="badge badge-grey">F${last.force}</span>`:''}
+      ${last.reine?`<span class="badge ${last.reine==='V'?'badge-ok':'badge-bad'}">Reine ${last.reine}</span>`:''}
+      ${last.reserves?`<span class="badge ${last.reserves==='OK'?'badge-ok':'badge-bad'}">${last.reserves}</span>`:''}
+    </div>`;
+  }
+
+  // Force
+  html += `<span class="field-label">Force de la colonie</span>
+    <div class="choices">
+      <button class="choice-btn${prevBadge(d.force,'1','1')}" onclick="setVal('force','1',this,'1')">1<small>Faible</small></button>
+      <button class="choice-btn${prevBadge(d.force,'2','2')}" onclick="setVal('force','2',this,'2')">2<small>Moyenne</small></button>
+      <button class="choice-btn${prevBadge(d.force,'3','3')}" onclick="setVal('force','3',this,'3')">3<small>Forte</small></button>
+    </div>`;
+
+  // Reine
+  html += `<span class="field-label">Reine</span>
+    <div class="choices">
+      <button class="choice-btn${prevBadge(d.reine,'V','v')}" onclick="setVal('reine','V',this,'v')">V<small>Vue</small></button>
+      <button class="choice-btn${prevBadge(d.reine,'NV','nv')}" onclick="setVal('reine','NV',this,'nv')">NV<small>Non vue</small></button>
+    </div>`;
+
+  // Couvain
+  html += `<span class="field-label">Couvain</span>
+    <div class="choices">
+      <button class="choice-btn${prevBadge(d.couvain,'O','o')}" onclick="setVal('couvain','O',this,'o')">O<small>Operculé</small></button>
+      <button class="choice-btn${prevBadge(d.couvain,'I','i')}" onclick="setVal('couvain','I',this,'i')">I<small>Irrégulier</small></button>
+    </div>`;
+
+  // Réserves
+  html += `<span class="field-label">Réserves</span>
+    <div class="choices">
+      <button class="choice-btn${prevBadge(d.reserves,'OK','ok')}" onclick="setVal('reserves','OK',this,'ok')">OK<small>Suffisantes</small></button>
+      <button class="choice-btn${prevBadge(d.reserves,'F','f')}" onclick="setVal('reserves','F',this,'f')">F<small>Faibles</small></button>
+    </div>`;
+
+  // Actions
+  html += `<span class="field-label">Actions réalisées</span>
+    <div class="actions-grid">` +
+    ACTIONS_LIST.map(a => `<div class="action-chip${d.actions.includes(a)?' on':''}" onclick="toggleAction('${r.id}','${a}',this)">${a}</div>`).join('') +
+    `</div>`;
+
+  // Obs
+  html += `<span class="field-label">Observations</span>
+    <textarea class="obs-input" id="obs-field" placeholder="Anomalie, comportement, météo..."
+      oninput="tournee.data['${r.id}'].obs=this.value">${d.obs}</textarea>`;
+
+  // Nav
+  html += `<div class="nav-row">
+    ${tournee.idx > 0
+      ? `<button class="btn-prev" onclick="tourneeNav(-1)">← Préc.</button>`
+      : `<button class="btn-prev" onclick="confirmQuitTournee()">Quitter</button>`}
+    ${isLast
+      ? `<button class="btn-finish" onclick="finishTournee()">✓ Terminer la tournée</button>`
+      : `<button class="btn-next" onclick="tourneeNav(1)">Suivante →</button>`}
+  </div>`;
+
+  document.getElementById('tournee-content').innerHTML = html;
+  document.getElementById('tournee-content').scrollTop = 0;
+}
+
+function setVal(field, val, btn, cls) {
+  const r = tournee.ruches[tournee.idx];
+  tournee.data[r.id][field] = val;
+  const parent = btn.parentElement;
+  parent.querySelectorAll('.choice-btn').forEach(b => {
+    b.className = 'choice-btn';
+  });
+  btn.className = `choice-btn selected-${cls}`;
+}
+
+function toggleAction(rucheId, action, el) {
+  const d = tournee.data[rucheId];
+  if (d.actions.includes(action)) {
+    d.actions = d.actions.filter(a=>a!==action);
+    el.classList.remove('on');
+  } else {
+    d.actions.push(action);
+    el.classList.add('on');
+  }
+}
+
+function tourneeNav(dir) {
+  tournee.idx += dir;
+  renderTourneeStep();
+}
+
+function finishTournee() {
+  const today = new Date().toISOString().slice(0,10);
+  tournee.ruches.forEach(r => {
+    const d = tournee.data[r.id];
+    if (d.force || d.reine || d.couvain || d.reserves || d.actions.length || d.obs) {
+      db.visites.push({
+        id: Date.now().toString() + Math.random(),
+        rucheId: r.id, date: today,
+        force: d.force, reine: d.reine, couvain: d.couvain,
+        reserves: d.reserves, actions: d.actions, obs: d.obs
+      });
+    }
+  });
+  save();
+  toast('Tournée enregistrée ✓');
+  showTab('dashboard');
+}
+
+function confirmQuitTournee() {
+  showConfirm('Quitter la tournée ? Les données non enregistrées seront perdues.', function() {
+    showTab('dashboard');
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// ALERTES
+// ═══════════════════════════════════════════════════
+function getAlertes() {
+  const now = Date.now();
+  const alerts = [];
+  db.ruches.filter(r => r.status !== 'vide').forEach(r => {
+    const vs = db.visites.filter(v=>v.rucheId===r.id).sort((a,b)=>b.date.localeCompare(a.date));
+    const last = vs[0]||null;
+    const rc = db.ruchers.find(x=>x.id===r.rucherId);
+    const label = `${rc?rc.nom+' · ':''}${r.num}`;
+    if (!last) {
+      alerts.push({type:'urgent', msg:`<strong>${label}</strong> — jamais visitée`, rucheId:r.id});
+    } else {
+      const jours = Math.floor((now - new Date(last.date)) / 86400000);
+      if (jours > 21) alerts.push({type:'urgent', msg:`<strong>${label}</strong> — ${jours} jours sans visite`, rucheId:r.id});
+      else if (jours > 14) alerts.push({type:'warn', msg:`<strong>${label}</strong> — visite recommandée (${jours}j)`, rucheId:r.id});
+      if (last.reine==='NV') alerts.push({type:'urgent', msg:`<strong>${label}</strong> — reine non vue`, rucheId:r.id});
+      if (last.reserves==='F') alerts.push({type:'warn', msg:`<strong>${label}</strong> — réserves faibles`, rucheId:r.id});
+      if (last.couvain==='I') alerts.push({type:'warn', msg:`<strong>${label}</strong> — couvain irrégulier`, rucheId:r.id});
+    }
+  });
+  return alerts;
+}
+
+function renderAlertes() {
+  const alerts = getAlertes();
+  const el = document.getElementById('alertes-content');
+  if (!alerts.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">✅</div><p>Aucune alerte.<br>Tout va bien dans le rucher !</p></div>`;
+    return;
+  }
+  const urgent = alerts.filter(a=>a.type==='urgent');
+  const warn   = alerts.filter(a=>a.type==='warn');
+  let html = '';
+  if (urgent.length) {
+    html += `<div class="section-title">🔴 Urgentes</div>`;
+    urgent.forEach(a => {
+      html += `<div class="alert-item urgent">
+        <div class="ai-text">${a.msg}</div>
+        <button class="ai-go" onclick="goToRuche('${a.rucheId}')">Voir</button>
+      </div>`;
+    });
+  }
+  if (warn.length) {
+    html += `<div class="section-title">🟡 À surveiller</div>`;
+    warn.forEach(a => {
+      html += `<div class="alert-item warn">
+        <div class="ai-text">${a.msg}</div>
+        <button class="ai-go" onclick="goToRuche('${a.rucheId}')">Voir</button>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function goToRuche(rucheId) {
+  const r = db.ruches.find(x=>x.id===rucheId);
+  if (!r) return;
+  currentRucherId = r.rucherId;
+  currentRucheId  = rucheId;
+  const rc = db.ruchers.find(x=>x.id===r.rucherId);
+  document.getElementById('s-ruches-title').textContent = `${rc.icon||''} ${rc.nom}`;
+  renderRucheDetail();
+  document.getElementById('s-ruche-title').textContent = r.num;
+  navStack = ['s-alertes'];
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-ruche-detail').classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// MODALS RUCHER / RUCHE
+// ═══════════════════════════════════════════════════
+let selectedIcon = '🌳';
+
+function openModalRucher() {
+  document.getElementById('modal-rucher-title').textContent = 'Nouveau rucher';
+  document.getElementById('mr-id').value = '';
+  document.getElementById('mr-nom').value = '';
+  document.getElementById('mr-lieu').value = '';
+  document.getElementById('mr-delete-btn').style.display = 'none';
+  document.getElementById('mr-merge-btn').style.display = 'none';
+  selectedIcon = '🌳';
+  renderIconPicker();
+  document.getElementById('modal-rucher').classList.add('open');
+}
+
+function editRucher(id) {
+  const rc = db.ruchers.find(x=>x.id===id);
+  document.getElementById('modal-rucher-title').textContent = 'Modifier le rucher';
+  document.getElementById('mr-id').value = rc.id;
+  document.getElementById('mr-nom').value = rc.nom;
+  document.getElementById('mr-lieu').value = rc.lieu||'';
+  document.getElementById('mr-delete-btn').style.display = 'block';
+  document.getElementById('mr-merge-btn').style.display = 'block';
+  selectedIcon = rc.icon||'🌳';
+  renderIconPicker();
+  document.getElementById('modal-rucher').classList.add('open');
+}
+
+function renderIconPicker() {
+  document.getElementById('mr-icons').innerHTML = RUCHER_ICONS.map(ic =>
+    `<button onclick="selectedIcon='${ic}';renderIconPicker()" style="font-size:1.4rem;padding:6px 10px;background:${ic===selectedIcon?'var(--warm2)':'none'};border:2px solid ${ic===selectedIcon?'var(--honey)':'transparent'};border-radius:8px;cursor:pointer;">${ic}</button>`
+  ).join('');
+}
+
+function saveRucher() {
+  const nom = document.getElementById('mr-nom').value.trim();
+  if (!nom) { toast('Le nom est obligatoire'); return; }
+  const id = document.getElementById('mr-id').value;
+  const obj = { id: id||Date.now().toString(), nom, lieu: document.getElementById('mr-lieu').value.trim(), icon: selectedIcon };
+  if (id) { const i = db.ruchers.findIndex(x=>x.id===id); db.ruchers[i]=obj; }
+  else db.ruchers.push(obj);
+  save(); closeModal('modal-rucher'); renderRuchers();
+}
+
+function deleteRucher() {
+  const id = document.getElementById('mr-id').value;
+  showConfirm('Supprimer ce rucher et toutes ses ruches/visites ?', function() {
+    const ruches = db.ruches.filter(r=>r.rucherId===id);
+    ruches.forEach(r => { db.visites = db.visites.filter(v=>v.rucheId!==r.id); });
+    db.ruches = db.ruches.filter(r=>r.rucherId!==id);
+    db.ruchers = db.ruchers.filter(x=>x.id!==id);
+    save(); closeModal('modal-rucher'); renderRuchers();
+    toast('Rucher supprimé ✓');
+  });
+}
+
+function setColonyType(type) {
+  document.getElementById('mru-colony-type').value = type;
+  const br = document.getElementById('mru-toggle-ruche');
+  const rt = document.getElementById('mru-toggle-ruchette');
+  br.className = 'choice-btn' + (type==='ruche'?' selected-ok':'');
+  rt.className = 'choice-btn' + (type==='ruchette'?' selected-ok':'');
+  // Auto-suggest number prefix
+  const numField = document.getElementById('mru-num');
+  if (!numField.value) numField.placeholder = type==='ruchette'?'N01':'R01';
+}
+
+function setRucheStatus(status) {
+  document.getElementById('mru-status').value = status;
+  const ac = document.getElementById('mru-toggle-active');
+  const vd = document.getElementById('mru-toggle-vide');
+  ac.className = 'choice-btn' + (status==='active'?' selected-ok':'');
+  vd.className = 'choice-btn' + (status==='vide'?' selected-1':'');
+}
+
+function openModalRuche() {
+  document.getElementById('modal-ruche-title').textContent = 'Nouvelle ruche';
+  document.getElementById('mru-id').value = '';
+  document.getElementById('mru-num').value = '';
+  document.getElementById('mru-type').value = 'Dadant 10';
+  document.getElementById('mru-race').value = '';
+  document.getElementById('mru-notes').value = '';
+  document.getElementById('mru-delete-btn').style.display = 'none';
+  document.getElementById('mru-move-btn').style.display = 'none';
+  document.getElementById('mru-colony-type').value = 'ruche';
+  setColonyType('ruche');
+  document.getElementById('mru-status').value = 'active';
+  setRucheStatus('active');
+  document.getElementById('modal-ruche').classList.add('open');
+}
+
+function editRuche() {
+  const r = db.ruches.find(x=>x.id===currentRucheId);
+  document.getElementById('modal-ruche-title').textContent = 'Modifier la ruche';
+  document.getElementById('mru-id').value = r.id;
+  document.getElementById('mru-num').value = r.num;
+  document.getElementById('mru-type').value = r.type||'Dadant 10';
+  document.getElementById('mru-race').value = r.race||'';
+  document.getElementById('mru-notes').value = r.notes||'';
+  document.getElementById('mru-delete-btn').style.display = 'block';
+  document.getElementById('mru-move-btn').style.display = 'block';
+  const ct = r.colonyType||'ruche';
+  document.getElementById('mru-colony-type').value = ct;
+  setColonyType(ct);
+  const st = r.status||'active';
+  document.getElementById('mru-status').value = st;
+  setRucheStatus(st);
+  document.getElementById('modal-ruche').classList.add('open');
+}
+
+function saveRuche() {
+  const num = document.getElementById('mru-num').value.trim();
+  if (!num) { toast('Le numéro est obligatoire'); return; }
+  const id = document.getElementById('mru-id').value;
+  const obj = { id: id||Date.now().toString(), rucherId: currentRucherId, num,
+    colonyType: document.getElementById('mru-colony-type').value,
+    status: document.getElementById('mru-status').value,
+    type: document.getElementById('mru-type').value,
+    race: document.getElementById('mru-race').value,
+    notes: document.getElementById('mru-notes').value.trim() };
+  if (id) { const i = db.ruches.findIndex(x=>x.id===id); db.ruches[i]=obj; }
+  else db.ruches.push(obj);
+  save(); closeModal('modal-ruche'); renderRuches();
+  if (id) renderRucheDetail();
+}
+
+// Suppression directe par id
+function deleteRucheId(id) {
+  showConfirm('Supprimer cette ruche et tout son historique ?', function() {
+    db.visites = db.visites.filter(v => v.rucheId !== id);
+    db.ruches  = db.ruches.filter(r => r.id !== id);
+    save();
+    renderRuches();
+    toast('Ruche supprimée ✓');
+  });
+}
+
+// Edition directe par id
+function editRucheId(id) {
+  currentRucheId = id;
+  editRuche();
+}
+
+// Suppression depuis le détail (utilise currentRucheId)
+function deleteCurrentRuche() {
+  if (!currentRucheId) { toast('Erreur : aucune ruche sélectionnée'); return; }
+  if (!confirm('Supprimer cette ruche et tout son historique ?')) return;
+  db.visites = db.visites.filter(v => v.rucheId !== currentRucheId);
+  db.ruches  = db.ruches.filter(r => r.id !== currentRucheId);
+  currentRucheId = null;
+  save();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-ruches').classList.add('active');
+  navStack = [];
+  renderRuches();
+  toast('Ruche supprimée');
+}
+
+// Suppression depuis le modal édition
+function deleteRuche() {
+  const id = document.getElementById('mru-id').value;
+  if (!id) { toast('Erreur : aucune ruche sélectionnée'); return; }
+  if (!confirm('Supprimer cette ruche et tout son historique ?')) return;
+  db.visites = db.visites.filter(v => v.rucheId !== id);
+  db.ruches  = db.ruches.filter(r => r.id !== id);
+  currentRucheId = null;
+  save();
+  closeModal('modal-ruche');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-ruches').classList.add('active');
+  navStack = [];
+  renderRuches();
+  toast('Ruche supprimée');
+}
+
+// Visite depuis détail ruche (1 ruche)
+function openVisite1Ruche() {
+  const r = db.ruches.find(x=>x.id===currentRucheId);
+  tournee = { rucherId: r.rucherId, ruches:[r], idx:0, data:{[r.id]:{force:'',reine:'',couvain:'',reserves:'',actions:[],obs:''}} };
+  const rc = db.ruchers.find(x=>x.id===r.rucherId);
+  const titleEl2 = document.getElementById('tournee-title');
+  titleEl2.childNodes[0].textContent = r.num;
+  nav('s-tournee');
+  const sub = document.getElementById('tournee-sub');
+  if (sub) sub.textContent = '';
+  renderTourneeStep();
+}
+
+// ═══════════════════════════════════════════════════
+// PARAMS
+// ═══════════════════════════════════════════════════
+function saveParams() {
+  db.params.nom = document.getElementById('p-nom').value;
+  save();
+}
+
+function exportData() {
+  try {
+    const json = JSON.stringify(db, null, 2);
+
+    // Méthode 1 : tentative de téléchargement classique
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rucher_' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+
+    // Méthode 2 : ouverture dans un nouvel onglet (fonctionne sur Android file://)
+    // Affiche le JSON en texte brut, l'utilisateur peut le partager/enregistrer via le menu Chrome
+    showExportFallback(json);
+  } catch (err) {
+    toast('Erreur export : ' + err.message);
+  }
+}
+
+function showExportFallback(json) {
+  document.getElementById('export-textarea').value = json;
+  document.getElementById('modal-export').classList.add('open');
+}
+
+function copyExportData() {
+  const ta = document.getElementById('export-textarea');
+  ta.select();
+  ta.setSelectionRange(0, 999999);
+  try {
+    document.execCommand('copy');
+    toast('Copié dans le presse-papier ✓');
+  } catch {
+    toast('Sélectionnez et copiez manuellement le texte');
+  }
+}
+
+function doImport(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if (d.ruchers && d.ruches && d.visites) {
+        showConfirm('Remplacer toutes les donn\u00e9es actuelles par celles du fichier import\u00e9 ?', function() {
+          db = d; save(); load(); toast('Import r\u00e9ussi \u2713');
+        });
+      } else {
+        toast('Fichier non reconnu');
+      }
+    } catch (err) {
+      toast('Erreur de lecture : ' + err.message);
+    }
+  };
+  reader.onerror = () => toast('Impossible de lire le fichier');
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetData() {
+  if (confirm('Effacer TOUTES les données ?')) {
+    db = { ruchers:[], ruches:[], visites:[], params:{nom:''} };
+    save(); load(); toast('Données effacées');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+
+
+
+function openMoveRuche() {
+  const id = document.getElementById('mru-id').value;
+  if (!id) return;
+  const r = db.ruches.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('move-ruche-label').textContent = r.num;
+  const others = db.ruchers.filter(x => x.id !== r.rucherId);
+  if (!others.length) { toast('Aucun autre rucher disponible'); return; }
+  document.getElementById('move-ruche-dest').innerHTML =
+    others.map(rc => `<option value="${rc.id}">${rc.icon||''} ${rc.nom}</option>`).join('');
+  closeModal('modal-ruche');
+  document.getElementById('modal-move-ruche').classList.add('open');
+}
+
+function doMoveRuche() {
+  const rucheId = document.getElementById('mru-id').value;
+  const destId  = document.getElementById('move-ruche-dest').value;
+  if (!rucheId || !destId) return;
+  const dest = db.ruchers.find(x => x.id === destId);
+  const r    = db.ruches.find(x => x.id === rucheId);
+  showConfirm('Déplacer la ruche ' + (r ? r.num : '') + ' vers ' + (dest ? dest.nom : '') + ' ?', function() {
+    const ruche = db.ruches.find(x => x.id === rucheId);
+    if (ruche) ruche.rucherId = destId;
+    save();
+    closeModal('modal-move-ruche');
+    renderRuches();
+    toast('Ruche déplacée ✓');
+  });
+}
+
+function openMerge() {
+  const srcId = document.getElementById('mr-id').value;
+  const src = db.ruchers.find(x => x.id === srcId);
+  if (!src) return;
+  document.getElementById('merge-src-label').textContent = src.nom;
+
+  // Populate destination select (all ruchers except source)
+  const others = db.ruchers.filter(x => x.id !== srcId);
+  if (!others.length) { toast('Aucun autre rucher disponible'); return; }
+  document.getElementById('merge-dest-select').innerHTML =
+    others.map(r => `<option value="${r.id}">${r.icon||''} ${r.nom} (${db.ruches.filter(x=>x.rucherId===r.id).length} ruches)</option>`).join('');
+
+  closeModal('modal-rucher');
+  document.getElementById('modal-merge').classList.add('open');
+}
+
+function doMerge() {
+  const srcId = document.getElementById('mr-id').value;
+  const destId = document.getElementById('merge-dest-select').value;
+  if (!srcId || !destId) return;
+
+  const dest = db.ruchers.find(x => x.id === destId);
+  showConfirm('Transférer toutes les ruches vers ' + (dest ? dest.nom : '?') + ' et supprimer le rucher source ?', function() {
+    // Move all ruches from src to dest
+    db.ruches.forEach(r => { if (r.rucherId === srcId) r.rucherId = destId; });
+    // Delete src rucher
+    db.ruchers = db.ruchers.filter(x => x.id !== srcId);
+    save();
+    closeModal('modal-merge');
+    renderRuchers();
+    toast('Fusion effectuée ✓');
+  });
+}
+
+function showConfirm(msg, onOk) {
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-ok').onclick = function() {
+    closeModal('modal-confirm');
+    onOk();
+  };
+  document.getElementById('modal-confirm').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const [y,m,j] = d.split('-');
+  return `${j}/${m}/${y}`;
+}
+
+function fmtDateFull(d) {
+  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+
+// Close modals on backdrop tap
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target===o) o.classList.remove('open'); });
+});
+
+
+// ═══════════════════════════════════════════════════
+// RECONNAISSANCE VOCALE
+// ═══════════════════════════════════════════════════
+let recognition = null;
+
+function initVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return null;
+  const r = new SpeechRecognition();
+  r.lang = 'fr-FR';
+  r.continuous = false;
+  r.interimResults = false;
+  return r;
+}
+
+function startVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast('Reconnaissance vocale non disponible sur ce navigateur');
+    return;
+  }
+
+  const btn = document.getElementById('mic-btn');
+  const result = document.getElementById('mic-result');
+  if (!btn || !result) return;
+
+  recognition = initVoice();
+
+  recognition.onstart = () => {
+    btn.classList.add('listening');
+    btn.textContent = '⏹';
+    result.textContent = 'Écoute en cours…';
+    result.style.borderColor = 'var(--red)';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript.toLowerCase().trim();
+    result.textContent = '« ' + transcript + ' »';
+    result.style.borderColor = 'var(--green)';
+    parseVoice(transcript);
+  };
+
+  recognition.onerror = (e) => {
+    btn.classList.remove('listening');
+    btn.textContent = '🎤';
+    result.style.borderColor = 'var(--warm2)';
+    if (e.error === 'no-speech') result.textContent = 'Rien entendu, réessayez.';
+    else result.textContent = 'Erreur : ' + e.error;
+  };
+
+  recognition.onend = () => {
+    btn.classList.remove('listening');
+    btn.textContent = '🎤';
+  };
+
+  recognition.start();
+}
+
+function parseVoice(t) {
+  const r = tournee.ruches[tournee.idx];
+  const d = tournee.data[r.id];
+  let action = null;
+
+  // FORCE
+  if (/force.*(un|1|faible)/.test(t) || /colonie.*(faible|un)/.test(t)) {
+    d.force = '1'; action = 'Force → 1 (Faible)';
+  } else if (/force.*(deux|2|moyen)/.test(t) || /colonie.*(moyenne|deux)/.test(t)) {
+    d.force = '2'; action = 'Force → 2 (Moyenne)';
+  } else if (/force.*(trois|3|fort)/.test(t) || /colonie.*(forte|trois)/.test(t)) {
+    d.force = '3'; action = 'Force → 3 (Forte)';
+
+  // REINE
+  } else if (/reine.*(vue|présente|v\b)/.test(t) || /^vue$/.test(t)) {
+    d.reine = 'V'; action = 'Reine → Vue';
+  } else if (/reine.*(non vue|absente|pas vue|nv)/.test(t) || /non vue/.test(t)) {
+    d.reine = 'NV'; action = 'Reine → Non vue';
+
+  // COUVAIN
+  } else if (/couvain.*(normal|operculé|bon|ok)/.test(t) || /operculé/.test(t)) {
+    d.couvain = 'O'; action = 'Couvain → Operculé';
+  } else if (/couvain.*(irrégulier|problème|mauvais)/.test(t) || /irrégulier/.test(t)) {
+    d.couvain = 'I'; action = 'Couvain → Irrégulier';
+
+  // RÉSERVES
+  } else if (/réserves?.*(ok|suffisant|abondant|bonne?)/.test(t) || /^ok$/.test(t)) {
+    d.reserves = 'OK'; action = 'Réserves → OK';
+  } else if (/réserves?.*(faible|vide|insuffisant|manque)/.test(t)) {
+    d.reserves = 'F'; action = 'Réserves → Faibles';
+
+  // ACTIONS
+  } else if (/nourrissement|nourrir|sirop|candi/.test(t)) {
+    if (!d.actions.includes('Nourrissement')) d.actions.push('Nourrissement');
+    action = 'Action : Nourrissement ✓';
+  } else if (/traitement|varroa|apivar|apiguard|oxalique/.test(t)) {
+    if (!d.actions.includes('Traitement varroa')) d.actions.push('Traitement varroa');
+    action = 'Action : Traitement varroa ✓';
+  } else if (/pose.*(hausse|hause)|ajouter hausse/.test(t)) {
+    if (!d.actions.includes('Pose hausse')) d.actions.push('Pose hausse');
+    action = 'Action : Pose hausse ✓';
+  } else if (/retrait.*(hausse|hause)|enlever hausse|retirer hausse/.test(t)) {
+    if (!d.actions.includes('Retrait hausse')) d.actions.push('Retrait hausse');
+    action = 'Action : Retrait hausse ✓';
+  } else if (/essaimage|essaim/.test(t)) {
+    if (!d.actions.includes('Essaimage')) d.actions.push('Essaimage');
+    action = 'Action : Essaimage ✓';
+  } else if (/récolte|récolter|extraction/.test(t)) {
+    if (!d.actions.includes('Récolte miel')) d.actions.push('Récolte miel');
+    action = 'Action : Récolte miel ✓';
+  } else if (/remplacement.*(reine|mère)|nouvelle reine/.test(t)) {
+    if (!d.actions.includes('Remplacement reine')) d.actions.push('Remplacement reine');
+    action = 'Action : Remplacement reine ✓';
+
+  // NAVIGATION
+  } else if (/suivante?|prochain/.test(t)) {
+    if (tournee.idx < tournee.ruches.length - 1) { tourneeNav(1); return; }
+  } else if (/précédente?|retour/.test(t)) {
+    if (tournee.idx > 0) { tourneeNav(-1); return; }
+  } else if (/terminé?|fin|terminer/.test(t)) {
+    finishTournee(); return;
+
+  // OBSERVATION LIBRE
+  } else if (t.startsWith('observation') || t.startsWith('note') || t.startsWith('remarque')) {
+    const obs = t.replace(/^(observation|note|remarque)[\s:]*/, '');
+    d.obs = d.obs ? d.obs + '. ' + obs : obs;
+    action = 'Note : « ' + obs + ' »';
+  } else {
+    // Texte non reconnu → ajout dans observations
+    d.obs = d.obs ? d.obs + '. ' + t : t;
+    action = 'Ajouté en observation';
+  }
+
+  if (action) {
+    const result = document.getElementById('mic-result');
+    if (result) result.textContent = '✓ ' + action;
+    renderTourneeStep();
+    // Restore mic result after re-render
+    setTimeout(() => {
+      const r2 = document.getElementById('mic-result');
+      if (r2) { r2.textContent = '✓ ' + action; r2.style.borderColor = 'var(--green)'; }
+    }, 50);
+  }
+}
+
+const importFileEl = document.getElementById('import-file');
+if (importFileEl) importFileEl.addEventListener('change', doImport);
+
+load();
+</script>
+</body>
+</html>
